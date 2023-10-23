@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteRule ^$ crimsonmvc/ [L]
+    RewriteRule (.*) crimsonmvc/$1
+</IfModule>
