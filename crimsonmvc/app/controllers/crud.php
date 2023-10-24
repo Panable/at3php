@@ -56,12 +56,21 @@ class crud extends controller
     public function create($table)
     {
         try {
-
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                //sanitize
+                // Sanitize
                 $_POST = array_map("htmlspecialchars", $_POST);
+
+                // Attempt to create a new row
                 $this->postModel->createRow($table, $_POST);
-                $this->sendSuccess();
+
+                if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+                    $this->sendSuccess();
+                } else {
+                    // Set success session variables and redirect
+                    $_SESSION['statusHeader'] = "SUCCESS";
+                    $_SESSION['statusMsg'] = "Successfully created $table";
+                    redirect('pages/status');
+                }
             } else {
                 $tableData = $this->postModel->getColumnNames($table);
                 $data = [
@@ -71,14 +80,19 @@ class crud extends controller
                 $this->view('crud/create', $data);
             }
         } catch (Exception $e) {
-            $data['error'] = $e->getMessage();
-            $this->view('crud/error', $data);
+            if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+                $this->sendError($e->getMessage());
+            } else {
+                // Set error session variables and redirect
+                $_SESSION['statusHeader'] = "ERROR";
+                $_SESSION['statusMsg'] = "Error Creating $table: " . $e->getMessage();
+                redirect('pages/status');
+            }
         }
     }
 
     public function read($tableName)
     {
-
         try {
             $table = $this->postModel->readTable($tableName);
 
@@ -103,11 +117,13 @@ class crud extends controller
                     $this->sendError($e->getMessage());
                 }
             }
-            // Handle the exception (e.g., display an error message or redirect to an error page).
-            $data['error'] = $e->getMessage();
-            $this->view('crud/error', $data);
+            // Set error session variables and redirect
+            $_SESSION['statusHeader'] = "ERROR";
+            $_SESSION['statusMsg'] = $e->getMessage();
+            redirect('pages/status');
         }
     }
+
     public function update($tableName, $id)
     {
         try {
@@ -134,20 +150,14 @@ class crud extends controller
 
                 $this->postModel->editRow($tableName, $sanitizedPutData);
 
-
-                if ($_SERVER['REQUEST_METHOD'] === 'PUT')
+                if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                     $this->sendSuccess();
-                else {
-
-                    $data = [
-                        'success' => 'Successfully edited ' . $id,
-                    ];
-                    $this->view('crud/success', $data);
+                } else {
+                    // Set success session variables and redirect
+                    $_SESSION['statusHeader'] = "SUCCESS";
+                    $_SESSION['statusMsg'] = "Successfully edited $id";
+                    redirect('pages/status');
                 }
-
-                // Now you can work with the sanitized PUT data
-                // For example, access $sanitizedPutData['key'] to get values
-
             } else {
                 $table = $this->postModel->readRow($tableName, $id);
 
@@ -158,34 +168,33 @@ class crud extends controller
                 $this->view('crud/update', $data);
             }
         } catch (Exception $e) {
-
-            // Handle the exception (e.g., display an error message or redirect to an error page).
-            $data['error'] = $e->getMessage();
-            $this->view('crud/error', $data);
+            // Set error session variables and redirect
+            $_SESSION['statusHeader'] = "ERROR";
+            $_SESSION['statusMsg'] = $e->getMessage();
+            redirect('pages/status');
         }
     }
 
-
-
     public function delete($table, $id)
     {
-
         try {
             $this->postModel->deleteRow($table, $id);
-            $data = [
-                'success' => 'deleted successfully id of:' . $id,
-            ];
             if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
                 $this->sendSuccess();
             } else {
-                $this->view('crud/success', $data);
+                // Set success session variables and redirect
+                $_SESSION['statusHeader'] = "SUCCESS";
+                $_SESSION['statusMsg'] = "Deleted successfully id of: $id";
+                redirect('pages/status');
             }
         } catch (Exception $e) {
-            $data['error'] = $e->getMessage();
             if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
                 $this->sendError($e->getMessage());
             } else {
-                $this->view('crud/error', $data);
+                // Set error session variables and redirect
+                $_SESSION['statusHeader'] = "ERROR";
+                $_SESSION['statusMsg'] = $e->getMessage();
+                redirect('pages/status');
             }
         }
     }

@@ -26,7 +26,6 @@ class core
                         $this->currentMethod = $url[2]; // Set the method from the third URL part
                         unset($url[2]);
                     } else {
-                        die("Need a create/read/update/delete, i.e 3 arguments");
                     }
 
                     if (isset($url[1])) {

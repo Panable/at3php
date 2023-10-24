@@ -28,4 +28,9 @@ class pages extends controller
         $data = ['title' => 'Login'];
         $this->view('pages/login', $data);
     }
+
+    public function status()
+    {
+        $this->view('pages/status');
+    }
 }

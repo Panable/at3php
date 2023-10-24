@@ -1,2 +1,2 @@
-<h1>ERROR</h1>
-<p><?php echo $data['error'] ?></p>
+<h1> <?php echo $_SESSION['statusHeader'] ?></h1>
+<p><?php echo $data['statusMsg'] ?></p>
