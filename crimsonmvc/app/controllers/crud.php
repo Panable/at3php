@@ -58,10 +58,23 @@ class crud extends controller
         try {
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Sanitize
-                $_POST = array_map("htmlspecialchars", $_POST);
+                $putData = file_get_contents("php://input");
+
+                if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+                    // Parse the raw data as JSON
+                    $putParams = json_decode($putData, true);
+                    if ($putParams === null) {
+                        throw new Exception("Failed to parse JSON data");
+                    }
+                } else {
+                    parse_str($putData, $putParams);
+                }
+
+                // Sanitize the PUT data (apply htmlspecialchars or other filtering)
+                $sanitizedData = array_map('htmlspecialchars', $putParams);
 
                 // Attempt to create a new row
-                $this->postModel->createRow($table, $_POST);
+                $this->postModel->createRow($table, $sanitizedData);
 
                 if (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
                     $this->sendSuccess();
