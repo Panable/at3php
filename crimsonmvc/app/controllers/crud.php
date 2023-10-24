@@ -55,9 +55,25 @@ class crud extends controller
 
     public function create($table)
     {
+        try {
 
-        http_response_code(200);
-        echo $table;
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                //sanitize
+                $_POST = array_map("htmlspecialchars", $_POST);
+                $this->postModel->createRow($table, $_POST);
+                $this->sendSuccess();
+            } else {
+                $tableData = $this->postModel->getColumnNames($table);
+                $data = [
+                    'tableData' => $tableData,
+                    'tableName' => $table
+                ];
+                $this->view('crud/create', $data);
+            }
+        } catch (Exception $e) {
+            $data['error'] = $e->getMessage();
+            $this->view('crud/error', $data);
+        }
     }
 
     public function read($tableName)

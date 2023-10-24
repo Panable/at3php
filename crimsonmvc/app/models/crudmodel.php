@@ -37,6 +37,47 @@ class crudmodel extends model
         }
     }
 
+    public function getColumnNames($table)
+    {
+        try {
+            $sql = "SHOW COLUMNS FROM $table";
+            $this->db->query($sql);
+            $result = $this->db->resultSet();
+            return $result;
+        } catch (PDOException $e) {
+            throw new Exception("Database error: " . $e->getMessage());
+        }
+    }
+
+    public function createRow($table, $data)
+    {
+        // Remove 'id' from the data since it's auto-increment
+        unset($data['id']);
+
+        // Generate placeholders for the columns and values
+        $columns = implode(', ', array_keys($data));
+        $placeholders = ':' . implode(', :', array_keys($data));
+
+        // Construct the SQL query for insertion
+        $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
+
+        try {
+            $this->db->query($sql);
+
+            // Bind the data values
+            foreach ($data as $column => $value) {
+                $this->db->bind(":$column", $value);
+            }
+
+            // Execute the query
+            $this->db->execute();
+
+            // Check if a row was inserted (success)
+        } catch (PDOException $e) {
+            throw new Exception("Database error: " . $e->getMessage());
+        }
+    }
+
     public function editRow($table, $data)
     {
         // Generate a list of columns and values to update
