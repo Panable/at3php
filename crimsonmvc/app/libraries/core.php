@@ -16,32 +16,54 @@ class core
         $url = $this->getUrl();
         if (!is_null($url)) {
             if (file_exists('../app/controllers/' . $url[0] . '.php')) {
-                //set as current controller
-                $this->currentController = $url[0];
-                unset($url[0]);
+                if ($url[0] === 'crud') {
+                    $this->currentController = $url[0];
+                    unset($url[0]);
+                    require_once '../app/controllers/' . $this->currentController . '.php';
+                    $this->currentController = new $this->currentController;
 
-                require_once '../app/controllers/' . $this->currentController . '.php';
-
-                $this->currentController = new $this->currentController;
-
-                if (isset($url[1])) {
-                    if (method_exists($this->currentController, $url[1])) {
-                        $this->currentMethod = $url[1];
-                        unset($url[1]);
+                    if (isset($url[2])) {
+                        $this->currentMethod = $url[2]; // Set the method from the third URL part
+                        unset($url[2]);
+                    } else {
+                        die("Need a create/read/update/delete, i.e 3 arguments");
                     }
+
+                    if (isset($url[1])) {
+                        $table = $url[1]; // Set the table name
+                    }
+
+                    // Check if an ID is provided (e.g., /crud/{table}/delete/{id})
+                    if (isset($url[3])) {
+                        $this->params = [$table, $url[3]]; // Add the table name and ID as parameters
+                    } elseif (isset($url[1])) {
+                        $this->params = [$table]; // Add only the table name as a parameter
+                    }
+
+                    // Call the controller method using call_user_func_array
+                    call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
+                } else {
+                    // For other controllers, load and handle them as before
+                    $this->currentController = $url[0];
+                    unset($url[0]);
+                    require_once '../app/controllers/' . $this->currentController . '.php';
+                    $this->currentController = new $this->currentController;
+
+                    if (isset($url[1])) {
+                        if (method_exists($this->currentController, $url[1])) {
+                            $this->currentMethod = $url[1];
+                            unset($url[1]);
+                        }
+                    }
+                    $this->params = $url ? array_values($url) : [];
+                    call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
                 }
-
-                $this->params = $url ? array_values($url) : [];
-
-                call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
             } else {
-                goto noController;
+                noController:
+                require_once '../app/controllers/' . $this->currentController . '.php';
+                $this->currentController = new $this->currentController;
+                call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
             }
-        } else {
-            noController:
-            require_once '../app/controllers/' . $this->currentController . '.php';
-            $this->currentController = new $this->currentController;
-            call_user_func_array([$this->currentController, $this->currentMethod], $this->params);
         }
     }
 

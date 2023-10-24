@@ -13,7 +13,7 @@ CREATE TABLE menu (
 );
 
 CREATE TABLE Employees (
-    ID INT PRIMARY KEY AUTO_INCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     Name NVARCHAR(100),
     Email NVARCHAR(100),
     Position NVARCHAR(50),
@@ -21,24 +21,25 @@ CREATE TABLE Employees (
 );
 
 CREATE TABLE OnlineBookings (
-    Phone_Number NVARCHAR(255) PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    Phone_Number NVARCHAR(255), 
     Time TIME,
     Date DATE,
     Guests INT
 );
 
 CREATE TABLE Orders (
-    OrderID INT PRIMARY KEY AUTO_INCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     TableNumber INT
 );
 
 CREATE TABLE OrderItems (
-    OrderItemID INT PRIMARY KEY AUTO_INCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     OrderID INT,
     ItemID INT
 );
 
-INSERT INTO Orders (OrderID, TableNumber)
+INSERT INTO Orders (id, TableNumber)
 VALUES
     (1001, NULL),
     (1002, NULL),
